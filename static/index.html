@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+  <title>Agile Tools</title>
+  <meta name="description" content="Agile Tools - A Train Hacking Production">
+  <meta name="author" content="Marvin Charles">
+
+  <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+
+  <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="stylesheet" type="text/css" href="/css/lib/normalize.css">
+  <link rel="stylesheet" type="text/css" href="/css/lib/skeleton.css">
+  <link rel="stylesheet" type="text/css" href="/css/style.css">
+
+  <!-- JavaScript - Preload
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="modulepreload" href="/js/app.module.js">
+  <link rel="modulepreload" href="/js/fibonacci-board.module.js">
+
+  <!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+
+</head>
+
+<body>
+
+  <!-- Primary Page Layout
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <div class="container" id="app">
+   
+    <div class="row">
+      <div class="column" style="margin-top: 1rem">
+        <h1>{{ appName }}</h1>
+      </div>
+      <div class="column">
+          <app-alerts></app-alerts> 
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <create-board-form></create-board-form>
+      </div>
+    </div>
+    <div class="row">
+      <div class="column">
+          <board></board>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+  Vue.component('app-alerts', {
+    created: function () {
+      const vm = this
+      this.$root.$on('alert-success', (msg) => vm.showAlert('success', msg))
+      this.$root.$on('alert-info', (msg) => vm.showAlert('info', msg))
+      this.$root.$on('alert-warn', (msg) => vm.showAlert('warn', msg))
+      this.$root.$on('alert-error', (msg) => vm.showAlert('error', msg))
+    },
+    data: function() {
+      return {
+        alertClass: '',
+        message: '',
+        show: false
+      }
+    },
+    methods: {
+      close: function() {
+        this.show = false
+      },
+      showAlert: function (type, message) {
+        const vm = this
+        this.alertClass = `alert-${type}`
+        this.message = message
+        this.show = true
+        setTimeout(() => vm.show = false, 5000)
+      }
+    },
+    template: `
+      <div 
+        class="alert alert-dismissible" 
+        role="alert"
+        v-bind:class="[alertClass]"
+        v-if="show"
+      >
+        {{ message }}
+        <button 
+          aria-label="Close" 
+          type="button" 
+          class="close" 
+          data-dismiss="alert" 
+          v-on:click="close"
+          >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    `
+  })
+
+  Vue.component('board', {
+    created: function () {
+      const vm = this
+      this.$root.$on('show-board', (boardId) => vm.loadBoard(boardId))
+      vm.loadBoard(window.location.hash)
+      
+    },
+    data: function() {
+      return {
+        activeBoard: null
+      }
+    },
+    methods: {
+      loadBoard: function (boardId) {
+        console.log('Attempting to load board: ', boardId)
+        if (!boardId) return
+        const vm = this
+        fetch('/api/v1/boards/' + boardId.substr(1), {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then(res => res.json())
+          .then(response => vm.activeBoard = response)
+          .catch(error => this.$root.$emit('alert-error', 'Oh snap. We had some issues loading that board.'))
+      }
+    },
+    template: `<div v-if="activeBoard">{{activeBoard}}</div>`
+  })
+  Vue.component('card', {
+    data: function() {
+      return {
+        reveal: false,
+        text: ''
+      }
+    },
+    template: `
+      <div>
+        <button>{{text}}</button>
+      </div>
+      `
+  })
+  Vue.component('create-board-form', {
+    data: function() {
+      return {
+        boardName: '',
+        boardType: '',
+        show: true
+      }
+    },
+    methods: {
+      createBoard: function (event) {
+        var vm = this
+        var payload = {
+          name: this.boardName,
+          type: this.boardType
+        }
+        fetch('/api/v1/boards', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then(res => res.json())
+          .then(response => {
+            window.location.hash = response.id
+            vm.show = false
+            vm.$root.$emit('alert-success', 'Cool. Your board was created.')
+            vm.$root.$emit('show-board', response.id)
+          })
+          .catch(error => vm.$root.$emit('alert-error', 'Well that\'s embarrassing. Looks like we messed up creating your board.'))
+      }
+    },
+    template: `
+      <form id="create-board-form" v-if="show">
+          <div class="row">
+            <div class="six columns">
+              <label for="board-name-input">Board Name</label>
+              <input v-model="boardName" class="u-full-width" type="text" name="boardName" placeholder="Sprint 23" id="board-name-input">
+            </div>
+            <div class="three columns">
+                <label for="board-type-input">Board Type</label>
+                <select v-model="boardType" class="u-full-width" name="boardType" id="board-type-input">
+                  <option value="standard">Standard</option>
+                  <option value="fibonacci">Fibonacci</option>
+                  <option value="tshirt">T-Shirt</option>
+                </select>
+            </div>
+            <div class="three columns">
+                <label>&nbsp;</label>
+              <button @click.prevent="createBoard" class="button-primary" type="submit">Submit</button>
+            </div>
+          </div>
+        </form>
+    `
+  })
+  var app = new Vue({
+  el: '#app',
+  data: {
+    appName: 'Agile Tools'
+  },
+  methods: {
+  }
+})
+</script>
+</html>
