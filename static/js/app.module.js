@@ -1,4 +1,4 @@
-import {CreateBoardForm} from './create-board-form.module.js'
+import { CreateBoardForm } from './create-board-form.module.js'
 export class App {
   static start () {
     console.log('Starting application...')

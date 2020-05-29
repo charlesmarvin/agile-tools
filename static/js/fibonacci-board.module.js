@@ -46,18 +46,18 @@ class Board {
 
 export class Standard extends Board {
   _getButtons () {
-    return [ 0, '1/2', 1, 2, 3, 5, 8, 13, 20, 40, 100, '?' ]
+    return [0, '1/2', 1, 2, 3, 5, 8, 13, 20, 40, 100, '?']
   }
 }
 
 export class Fibonacci extends Board {
   _getButtons () {
-    return [ 0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, '?' ]
+    return [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, '?']
   }
 }
 
 export class TShirt extends Board {
   _getButtons () {
-    return [ 'XS', 'S', 'M', 'L', 'XL', 'XXL', '?' ]
+    return ['XS', 'S', 'M', 'L', 'XL', 'XXL', '?']
   }
 }
