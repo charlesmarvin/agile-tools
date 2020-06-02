@@ -6,7 +6,8 @@ export default {
       boardType: 'standard',
       passcode: '',
       show: !window.location.hash,
-      passcodeProtect: false
+      passcodeProtect: false,
+      passcodeLength: 4
     }
   },
   methods: {
@@ -84,7 +85,7 @@ export default {
       
       <div class="flex-grid sp-bottom" v-bind:class="{ hide: !passcodeProtect }">
         <div class="col">
-          <input v-model="passcode" type="text" name="passcode" placeholder="4-digit Passcode" id="board-passcode-input">
+          <input v-model="passcode" type="text" name="passcode" placeholder="4-digit Passcode" id="board-passcode-input" :maxlength="passcodeLength">
         </div>
       </div>
 

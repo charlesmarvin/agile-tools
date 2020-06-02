@@ -104,7 +104,7 @@ export default {
   },
   template: `
   <div v-if="activeBoard">
-    <div class="flex-grid-sp">
+    <div class="flex-grid-sp center">
       <h2>{{ activeBoard.name }}</h2>
       <CopyLink v-bind:target="link"></CopyLink>
     </div>
