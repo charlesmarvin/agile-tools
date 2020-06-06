@@ -11,6 +11,7 @@ import (
 func main() {
 	http.HandleFunc("/api/v1/boards", httpapi.CreateBoardHandler)
 	http.HandleFunc("/api/v1/boards/", httpapi.GetBoardHandler)
+	http.HandleFunc("/ws", httpapi.SocketHandler)
 
 	fs := http.FileServer(http.Dir("../static"))
 	http.Handle("/", fs)

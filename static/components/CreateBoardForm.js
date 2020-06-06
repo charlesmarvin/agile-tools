@@ -5,7 +5,6 @@ export default {
       boardName: '',
       boardType: 'standard',
       passcode: '',
-      show: !window.location.hash,
       passcodeProtect: false,
       passcodeLength: 4
     }
@@ -32,11 +31,11 @@ export default {
           'Content-Type': 'application/json'
         }
       }).then(res => res.json())
-        .then(response => {
-          window.location.hash = response.id
+        .then(res => {
+          window.location.hash = res.id
           vm.show = false
           vm.$root.$emit('alert-success', 'Cool. Your board was created.')
-          vm.$root.$emit('show-board', response.id)
+          this.$router.push({ name: 'board', params: { id: res.id } })
         })
         .catch(error => { vm.$root.$emit('alert-error', 'Well that\'s embarrassing. Looks like we messed up creating your board.') })
     },
@@ -45,7 +44,7 @@ export default {
     }
   },
   template: `
-    <form id="create-board-form" v-if="show">
+    <form id="create-board-form">
       <div class="flex-grid toggle">
         <label v-if="passcodeProtect" v-on:click="toggleSecure">
           <span class="icon svg-baseline text-large">
