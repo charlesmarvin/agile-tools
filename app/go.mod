@@ -8,6 +8,8 @@ require (
 	github.com/gobwas/ws v1.0.3
 	github.com/google/uuid v1.1.1
 	github.com/mailru/easygo v0.0.0-20190618140210-3c14a0dc985f
+	github.com/pkg/errors v0.8.1
 	go.mongodb.org/mongo-driver v1.3.3
-	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
+	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
+	golang.org/x/tools/gopls v0.4.1 // indirect
 )

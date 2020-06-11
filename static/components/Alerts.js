@@ -16,14 +16,15 @@ export default {
   },
   methods: {
     close: function () {
-      this.show = false
+      const vm = this
+      vm.show = false
     },
     showAlert: function (type, message) {
       const vm = this
-      this.alertClass = `alert-${type}`
-      this.message = message
-      this.show = true
-      setTimeout(() => { vm.show = false }, 5000)
+      vm.alertClass = `alert-${type}`
+      vm.message = message
+      vm.show = true
+      setTimeout(() => { vm.show = false }, 8000)
     }
   },
   template: `

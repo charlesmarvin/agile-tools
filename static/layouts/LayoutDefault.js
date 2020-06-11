@@ -1,5 +1,9 @@
+import Alerts from '../components/Alerts.js'
 export default {
   name: 'LayoutDefault',
+  components: {
+    Alerts
+  },
   template: `
     <div class="LayoutDefault">
       <nav class="LayoutDefault__nav">
@@ -11,6 +15,7 @@ export default {
       </nav>
 
       <main class="LayoutDefault__main">
+        <alerts></alerts>
         <router-view></router-view>
       </main>
       

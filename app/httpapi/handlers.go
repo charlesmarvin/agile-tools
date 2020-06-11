@@ -21,15 +21,9 @@ func CreateBoardHandler(w http.ResponseWriter, req *http.Request) {
 		Error(w, http.StatusBadRequest, "Error decoding request payload.")
 		return
 	}
-	var newBoard domain.Board
-	// explicitly set ID
-	newBoard.ID = domain.NewBoardID()
-	newBoard.Name = createBoardRequest.Name
-	newBoard.Type = createBoardRequest.Type
-	newBoard.Passcode = createBoardRequest.Passcode
-	_, err = newBoard.Save()
+	newBoard, err := domain.CreateBoard(createBoardRequest)
 	if err != nil {
-		log.Printf("Error decoding request payload.")
+		log.Println("Error decoding request payload.")
 		Error(w, http.StatusBadRequest, "Error decoding request payload.")
 	} else {
 		Success(w, http.StatusCreated, newBoard)
@@ -39,11 +33,21 @@ func CreateBoardHandler(w http.ResponseWriter, req *http.Request) {
 // GetBoardHandler gets Board by ID
 func GetBoardHandler(w http.ResponseWriter, req *http.Request) {
 	boardID := strings.TrimPrefix(req.URL.Path, "/api/v1/boards/")
-	board, err := new(domain.Board).Get(boardID)
+	board := new(domain.Board)
+	values, ok := req.URL.Query()["passcode"]
+	var maybePasscode string
+	if ok && len(values[0]) > 1 {
+		maybePasscode = values[0]
+	}
+	err := board.Get(boardID, maybePasscode)
 	if err != nil {
-		Error(w, http.StatusNotFound, "Board "+boardID+" does not exist.")
+		if err == domain.ErrAuth {
+			Error(w, http.StatusUnauthorized, "Board "+boardID+" does not exist.")
+		} else {
+			Error(w, http.StatusNotFound, "Board "+boardID+" does not exist.")
+		}
 	} else {
-		Success(w, http.StatusCreated, board)
+		Success(w, http.StatusOK, board)
 	}
 }
 
@@ -98,12 +102,12 @@ func (sm *SessionManager) JoinBoard(boardID domain.BoardID, sessionID domain.Ses
 }
 
 func (sm *SessionManager) CastVote(boardID domain.BoardID, sessionID domain.SessionID, vote string) {
-	if (sm.votesByBoard[boardID] == nil) {
+	if sm.votesByBoard[boardID] == nil {
 		sm.votesByBoard[boardID] = make(map[domain.SessionID]string)
 	}
 	sm.votesByBoard[boardID][sessionID] = vote
 	// reveal votes if all participants have casted their votes
-	log.Printf("%v -- %v == %v", boardID, len(sm.sessionsByBoards[boardID]), len(sm.votesByBoard[boardID]) )
+	log.Printf("%v -- %v == %v", boardID, len(sm.sessionsByBoards[boardID]), len(sm.votesByBoard[boardID]))
 	if len(sm.sessionsByBoards[boardID]) == len(sm.votesByBoard[boardID]) {
 		var voteRevealMessage command
 		voteRevealMessage.Type = "vote_reveal"

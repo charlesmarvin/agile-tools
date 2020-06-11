@@ -12,7 +12,8 @@ export default {
   created: function () {
     const vm = this
     vm.boardId = this.$route.params.id
-    vm.loadBoard(vm.boardId)
+    vm.passcode = this.$route.query.passcode
+    vm.loadBoard(vm.boardId, vm.passcode)
     vm.ws = new WebSocket(`ws://${window.location.host}/ws`)
     vm.ws.onopen = function (event) {
       console.log('connected! ', event)
@@ -49,6 +50,13 @@ export default {
     Card,
     CopyLink
   },
+  filters: {
+    fmtShortCode: function (value) {
+      if (!value) return ''
+      value = value.toString()
+      return value.replace(/(\d{4})(\d{4})/, '$1 $2')
+    }
+  },
   computed: {
     link: function () {
       return window.location.href
@@ -57,6 +65,7 @@ export default {
   data: function () {
     return {
       boardId: null,
+      passcode: null,
       activeBoard: null,
       selection: null,
       sessionId: null,
@@ -74,11 +83,15 @@ export default {
       const vm = this
       vm.sessionId = sessionId
     },
-    loadBoard: async function (boardId) {
+    loadBoard: async function (boardId, passcode) {
       console.log('Attempting to load board: ', boardId)
       if (!boardId) return
       const vm = this
-      return fetch('/api/v1/boards/' + boardId, {
+      let url = '/api/v1/boards/' + boardId
+      if (passcode) {
+        url += `?passcode=${passcode}`
+      }
+      return fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
